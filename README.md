@@ -89,8 +89,14 @@ inshorts-backend/
 ```bash
 git clone <your_repo_url>
 cd inshorts-backend
+
+python -m venv venv
+source venv/bin/activate   # For macOS/Linux
+# .\venv\Scripts\activate   # For Windows
+
 pip install -r requirements.txt
 ```
+
 
 ### 2. Set up Environment Variables
 In configs/.env, setup your environment variables:
