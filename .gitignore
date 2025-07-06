@@ -49,9 +49,9 @@ dmypy.json
 # VSCode
 .vscode/
 
-# dotenv environment variables
-.env
-.env.*
+## dotenv environment variables
+#.env
+#.env.*
 
 # Local dev tools
 *.local

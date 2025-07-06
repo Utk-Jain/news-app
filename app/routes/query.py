@@ -104,7 +104,7 @@ def smart_query(
                 "relevance_score": article.get("relevance_score"),
                 "latitude": article.get("latitude"),
                 "longitude": article.get("longitude"),
-                "llm_summary": generate_summary(article.get("title", ""), article.get("description", ""))
+                "llm_summary": article.get("llm_summary", generate_summary(article.get("title", ""), article.get("description", ""))),
             })
 
         logger.info(f"QUERY | Returning {len(final_output)} articles for query: '{query}'")

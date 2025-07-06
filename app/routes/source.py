@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Query, HTTPException
 
 import app.context as context
+from app.services.llm import generate_summary
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("[source]")
@@ -35,7 +36,7 @@ def get_articles_by_source(
                 "relevance_score": article.get("relevance_score"),
                 "latitude": article.get("latitude"),
                 "longitude": article.get("longitude"),
-                "llm_summary": ""
+                "llm_summary": generate_summary(article.get("title", ""), article.get("description", ""))
             })
         logger.info(f"SOURCE | Fetched {len(articles)} articles for source: {name}")
 

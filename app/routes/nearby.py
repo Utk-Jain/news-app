@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Query, HTTPException
 
 import app.context as context
+from app.services.llm import generate_summary
 from app.services.utils import haversine
 
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +50,7 @@ def get_articles_nearby(
                 "relevance_score": article.get("relevance_score"),
                 "latitude": article.get("latitude"),
                 "longitude": article.get("longitude"),
-                "llm_summary": ""
+                "llm_summary": generate_summary(article.get("title", ""), article.get("description", ""))
             })
 
         return {"articles": response}

@@ -18,6 +18,7 @@ router = APIRouter()
 def get_trending_news(
     lat: float = Query(..., description="User's latitude"),
     lon: float = Query(..., description="User's longitude"),
+    radius: float = Query(100, description="Radius in kilometers (default: 100km)"),
     limit: int = Query(5, ge=1, le=20, description="Number of trending articles to return")
 ):
     try:
@@ -32,11 +33,11 @@ def get_trending_news(
             ev_lon = event["location"]["lon"]
             distance = haversine(lat, lon, ev_lat, ev_lon)
 
-            if distance <= 5000:
+            if distance <= radius:
                 time_diff = (now - event["timestamp"]).total_seconds() / 3600  # in hours
                 decay = 1 / (time_diff + 1)
                 base = 2 if event["event_type"] == "click" else 1
-                proximity = 1 - (distance / 50)
+                proximity = 1 - (distance / radius)
 
                 trending_scores[event["article_id"]] += base * decay * proximity
 
@@ -59,10 +60,12 @@ def get_trending_news(
                 "latitude": article["latitude"],
                 "longitude": article["longitude"],
                 "llm_summary": generate_summary(article.get("title", ""), article.get("description", "")),
-                "trending_score": trending_scores[article["id"]]
+                "metadata": {
+                    "trending_score": trending_scores[article["id"]],
+                }
             })
 
-        results.sort(key=lambda x: x["trending_score"], reverse=True)
+        results.sort(key=lambda x: x["metadata"]["trending_score"], reverse=True)
         return {"trending_articles": results}
 
     except Exception as e:

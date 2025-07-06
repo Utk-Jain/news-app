@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Query, HTTPException
 
 import app.context as context
+from app.services.llm import generate_summary
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("[search]")
@@ -30,7 +31,9 @@ def search_articles(
             "publication_date": 1,
             "source_name": 1,
             "category": 1,
-            "relevance_score": 1
+            "relevance_score": 1,
+            "latitude": 1,
+            "longitude": 1
         }
 
         logger.info(f"SEARCH | Searching articles with query: {query}")
@@ -63,11 +66,13 @@ def search_articles(
                 "source_name": article.get("source_name"),
                 "category": article.get("category"),
                 "relevance_score": round(article.get("relevance_score", 0), 2),
-                "text_score": round(article.get("score", 0), 2),
-                "final_score": round(article.get("final_score", 0), 2),
                 "latitude": article.get("latitude"),
                 "longitude": article.get("longitude"),
-                "llm_summary": ""
+                "llm_summary": generate_summary(article.get("title", ""), article.get("description", "")),
+                "metadata": {
+                    "text_score": round(article.get("score", 0), 2),
+                    "final_score": round(article.get("final_score", 0), 2)
+                }
             })
 
         return {"articles": response}
