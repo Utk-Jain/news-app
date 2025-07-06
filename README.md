@@ -83,18 +83,22 @@ inshorts-backend/
 ---
 
 ## 🔧 Setup Instructions
+Ensure Python is installed on your system.
 
-### 1. Clone & Install
+### 1. Clone, Set up Virtual env and Install Requirements
 
 ```bash
-git clone <your_repo_url>
-cd inshorts-backend
+1. Clone:
+    git clone <your_repo_url>
+    cd inshorts-backend
+    
+2. Select a Python interpreter or create a virtual environment:
+    python -m venv venv
+    source venv/bin/activate   # For macOS/Linux
+    # .\venv\Scripts\activate   # For Windows
 
-python -m venv venv
-source venv/bin/activate   # For macOS/Linux
-# .\venv\Scripts\activate   # For Windows
-
-pip install -r requirements.txt
+3. Install dependencies:
+    pip install -r requirements.txt
 ```
 
 
@@ -104,8 +108,9 @@ In configs/.env, setup your environment variables:
 GROQ_API_KEY=your_api_key
 MONGO_URI=mongodb://localhost:27017
 MONGO_DB_NAME=news_db
+REDIS_URL=redis://localhost:6379/0
 ```
-
+Start MongoDB and Redis locally, if using local instances.
 ### 3. Run the Application
 ```bash
 make run

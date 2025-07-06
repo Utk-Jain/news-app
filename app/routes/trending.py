@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, HTTPException
 
 import app.context as context
 from app.services.llm import generate_summary
+from app.services.trending_cache import get_cached_trending, set_cached_trending
 from app.services.utils import haversine
 
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +23,11 @@ def get_trending_news(
     limit: int = Query(5, ge=1, le=20, description="Number of trending articles to return")
 ):
     try:
+        cached = get_cached_trending(lat, lon)
+        if cached:
+            logger.info(f"TRENDING | Returning cached trending articles for {lat}, {lon}")
+            return {"articles": cached[:limit], "cache_hit": True}
+
         now = datetime.utcnow()
         trending_scores = defaultdict(lambda: 0)
 
@@ -53,7 +59,7 @@ def get_trending_news(
                 "title": article["title"],
                 "description": article["description"],
                 "url": article["url"],
-                "publication_date": article["publication_date"],
+                "publication_date": article["publication_date"].isoformat(),
                 "source_name": article["source_name"],
                 "category": article["category"],
                 "relevance_score": article["relevance_score"],
@@ -66,7 +72,8 @@ def get_trending_news(
             })
 
         results.sort(key=lambda x: x["metadata"]["trending_score"], reverse=True)
-        return {"trending_articles": results}
+        set_cached_trending(lat, lon, results)
+        return {"trending_articles": results, "cache_hit": False}
 
     except Exception as e:
         logger.error(f"TRENDING | Error generating trending articles: {str(e)}")

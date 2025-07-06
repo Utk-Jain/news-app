@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import redis
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -26,6 +27,7 @@ class App:
         self._setup_logging()
         self._load_env()
         self._connect_to_mongo()
+        self._connect_to_redis()
         self._init_llm_client()
         self._load_news_data_if_needed()
         self._register_routes()
@@ -42,14 +44,29 @@ class App:
     def _connect_to_mongo(self):
         mongo_uri = os.getenv("MONGO_URI")
         db_name = os.getenv("DB_NAME")
-        self.client = MongoClient(mongo_uri)
+
+        try:
+            self.client = MongoClient(mongo_uri)
+            self.logger.info(f"[App] Connected to MongoDB at '{mongo_uri}{db_name}'")
+        except Exception as e:
+            self.logger.error(f"[App] Failed to connect to MongoDB: {str(e)}")
+            raise
+
         self.db = self.client[db_name]
         self.articles_collection = self.db["articles"]
-        self.logger.info(f"[App] Connected to MongoDB at '{mongo_uri}{db_name}'")
-
         context.db = self.db
         context.articles_collection = self.articles_collection
         context.user_events_collection = self.db["user_events"]
+
+    def _connect_to_redis(self):
+        redis_url = os.getenv("REDIS_URL")
+
+        try:
+            context.redis_client = redis.StrictRedis.from_url(redis_url, decode_responses=True)
+            self.logger.info(f"[App] Connected to Redis at '{redis_url}'")
+        except Exception as e:
+            self.logger.error(f"[App] Failed to connect to Redis: {str(e)}")
+            raise
 
     def _init_llm_client(self):
         groq_api_key = os.getenv("GROQ_API_KEY")
